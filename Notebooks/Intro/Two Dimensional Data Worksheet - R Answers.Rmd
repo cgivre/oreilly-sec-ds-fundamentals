@@ -1,0 +1,96 @@
+---
+title: "Two Dimensional Data Worksheet"
+output: html_document
+---
+
+# Two Dimensional Data Worksheet
+
+This worksheet focuses on manipulating two dimensional data using Python and Pandas.
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+# install.packages("devtools")
+# devtools::install_github("hadley/tidyverse")
+library(tidyverse)
+knitr::opts_chunk$set(echo=FALSE)
+```
+
+Create a dataframe called `twitter` from the CSV file
+
+_Note if this is breaking your machine there is a smaller data set in the data file called twitter1-small.csv_
+
+```{r}
+twitter <- read_csv( '../../data/twitter1.csv')
+```
+
+
+## Exercise 1
+
+Using the twitter data frame, count the appearances of each `Username`, get the top 10 active users and output the sorted result.
+
+1. Start with `dplyr::count` on `Username`
+2. Grab the top 10 with `dplyr_top_n`
+3. sort with `dplyr::arrange`, can make it descending by wrapping the sort variable with `desc()`
+
+```{r}
+twitter %>% count(Username) %>% top_n(10) %>% arrange(desc(n))
+```
+
+## Exercise 2
+Using the original twitter data set, create a second DataFrame called `twitterSummary` which contains the following columns:
+
+* Username
+* Friends 
+* Followers
+
+Next add a column called `ffratio` which contains the ratio of friends to followers.  Show the first few lines.
+
+```{r}
+# classic method:
+# twitterSummary <- twitter[ ,c('Username', 'Friends', 'Followers')]
+# twitterSummary$ffratio <- twitterSummary$Friends / twitterSummary$Followers
+# head(twitterSummary)
+
+# with tidyverse
+twitterSummary <- twitter %>% 
+  select(Username, Friends, Followers) %>% 
+  mutate(ffratio = Friends / Followers)
+# it will automatically show it pretty
+twitterSummary
+```
+
+## Exercise 3
+
+In the `data` folder, there is file called `studentData.csv` consisting of students and test scores.  Write a script which calculates each students' average test score and adds that as a column to the DataFrame.  
+
+The first person to tell me which student has the highest average test score, and what it is wins something.
+
+```{r}
+
+```
+
+## Exercise 4
+Using the twitter data, find all the users with Facebook accounts and create a new column called `FacebookID` which contains the users' Facebook ID.  As you can see in the URL below, a user's Facebook ID can be found in the URL column, http://www.facebook.com/profile.php?id=5141860.  Extract this the ID. Don't forget to remove all the invalid or empty IDs.  
+
+1. Use the Function supplied to extract "?id=<numbers>" from the URL
+    + Note the function does not filter for facebook, so you will have to prefilter the data for facebook, try using `dplyr::filter` with `grepl` inside the function.
+2. Once complete, filter out the data where the FacebookID is not NA (`!is.na()`).
+
+_Note: there are a lot of [ways to pull a substring from a string](http://stackoverflow.com/questions/2192316/extract-a-regular-expression-match-in-r-version-2-10):_
+
+```{r}
+library(stringr) # do you have this installed?
+getfacebook <- function(x) {
+    # this pivots on grepl (logical grep returns TRUE or FALSE)
+    # if it contains facebook, then split on ?id=, grabbing the remaining text
+    # else return NA
+    ifelse(grepl('\\?id=\\d+', x), 
+           str_extract(str_extract(x, "\\?id=\\d+"), "\\d+"),
+           NA)
+}
+foo <- twitter %>% 
+  ## filter for all facebook to reduce computations later
+  filter(grepl('facebook.com', URL)) %>% 
+  ## run all the URLS through the above function
+  mutate(FacebookID = getfacebook(URL))
+foo %>% select(URL, FacebookID) %>% filter(!is.na(FacebookID))
+```

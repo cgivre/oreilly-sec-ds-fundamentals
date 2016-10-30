@@ -1,0 +1,61 @@
+---
+title: "One Dimensional Data Worksheet"
+output: html_document
+---
+
+# One Dimensional Data Worksheet
+This worksheet reviews the concepts discussed about 1 dimensional data.  The goal for these exercises is getting you to think in terms of vectorized computing.  This worksheet should take 20-30 minutes to complete.
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+# install.packages("devtools")
+# devtools::install_github("hadley/tidyverse")
+library(tidyverse)
+knitr::opts_chunk$set(echo=FALSE)
+```
+
+## Exercise 1
+Create a data.frame with 100 random integers in a column called "x", then filter out odd integers.  Hint:  you can use either `sample` or `runif` with `floor` to generate integers.  Print out the first 20 numbers.
+
+```{r}
+set.seed(1)
+x <- floor(runif(100, min=1, max=100)) # or round or ceiling
+# x <- sample(100, 100, replace=TRUE)  # if replace=FALSE, it will just re-arrange 1 to 100
+
+oddnum <- x[x %% 2 == 1]
+print(oddnum[1:20])  # or head(oddnum, 20)
+```
+
+## Exercise 2
+You will be given a vector containing 10 strings. Create a new vector called validPhoneNumbers that only contains data in the format (XXX)XXX-XXXX. 
+
+```{r}
+numbers <- c('(342)123-2345', '410-342-3421', '(234 434-2121', '(301)822-3423', 
+             '123-234-3423', '(410)555-4443', 'AAAAHHH', '(XXX)XXX-XXXX', 
+             '(602)123-4535', '(234)127-4534')
+
+phone <- grep('\\(\\d{3}\\)\\d{3}-\\d{4}', numbers, value = TRUE)
+# OR
+# phone <- numbers[grep('\\(\\d{3}\\)\\d{3}-\\d{4}', numbers)]
+print(phone)
+```
+
+## Exercise 3
+The code below contains a function which converts a temperature from Farenheit to Celsius.  You are given a vector called temperatures in Farhenheit.  Using the `sapply()` function, convert the data into degrees Celsius. 
+
+```{r}
+toCelsius <- function(x) ((5/9)*x-32)
+
+tempsF <- c(92, 33, -5, 17, 122, 87) 
+tempsC <- sapply(tempsF, toCelsius)
+print(tempsC)
+```
+
+## Exercise 4
+
+You are given a list of numbers called `numList`. Count the occurance of each value (`?table`).
+
+```{r}
+numList <- c(1,1,1,1,1,2,4,5,7,5,4,5,6,4,3,5,5,5,6,9,0,7,6,7,5,4,4,7)
+table(numList)
+```
+

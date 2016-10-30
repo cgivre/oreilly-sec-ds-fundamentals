@@ -24,6 +24,6 @@ jay@beechplane.com
 @jayjacobs
 
 Charles Givre:
-cgivre@gmail.com
+cgivre@thedataist.com
 @cgivre
 Blog: thedataist.com

@@ -1,0 +1,65 @@
+---
+title: "Visualization Worksheet"
+output: html_document
+---
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+library(tidyverse)
+```
+
+# Data Visualization Worksheet
+This worksheet will walk you through the basic process of preparing a visualization using R/ggplot2.  
+
+For this exercise, we will be creating a line plot comparing the number of hosts infected by the Bedep and ConfickerAB Bot Families in the Government/Politic sector.
+
+## Prepare the data
+The data we will be using is in the `dailybots.csv` file which can be found in the `data` folder.  As is common, we will have to do some data wrangling to get it into a format which we can use to visualize this data.  To do that, we'll need to:
+1.  Read in the data
+2.  Filter the data by industry and botnet
+
+###  Step 1 Read in the data
+
+```{r}
+bots <- read_csv('../../data/dailybots.csv')
+
+```
+
+### Step 2: Filter the Data
+The next step is to filter both by industry and by botfam. Filter for "Government/Politics" in the industry, and then bot family should be either ConfickerAB or Bedep.
+
+
+```{r}
+toplot <- ...
+  filter(industry == "Government/Politics",
+         botfam %in% c('ConfickerAB', 'Bedep'))
+  
+ggplot(toplot, aes(date, hosts, color=botfam)) + geom_line()
+```
+
+### pretty it up (1)
+
+* Apply `theme_bw()` to the plot,
+* Move the legend to the bottom (look at ?theme for 'legend_position')
+
+```{r}
+ggplot(toplot, aes(date, hosts, color=botfam)) + geom_line() +
+  theme_bw() +
+  theme(legend.position="bottom")
+```
+
+### make it bigger
+
+you won't see any difference unless you "Knit" the document, but the image size 
+can be set in the {r} tag.
+
+```{r fig.width=4, fig.height=3}
+ggplot(toplot, aes(date, hosts, color=botfam)) + geom_line() +
+  theme_bw() +
+  theme(legend.position="bottom")
+```
+
+### Interactive
+
+We won't go to interactive graphics quite yet, but if you wanted to look for an interactive option, see
+[HTML Widgets](http://www.htmlwidgets.org/showcase_dygraphs.html).
+http://rstudio.github.io/dygraphs

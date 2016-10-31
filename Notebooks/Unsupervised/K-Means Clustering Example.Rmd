@@ -1,0 +1,42 @@
+---
+title: "K-Means Clustering Example"
+output: html_document
+---
+
+```{r}
+# install.packages("devtools")
+# devtools::install_github("hadley/tidyverse")
+library(tidyverse)
+```
+
+```{r}
+data <- data.frame(x=c(1,5,1.5,8,1,9), y=c(2,8,1.8,8,0.6,11))
+```
+
+### Running K-Means
+
+```{r}
+set.seed(1)
+kmeans <- kmeans(data, centers=2)
+
+centroids <- as.data.frame(kmeans$centers)
+#setting labels to a factor to force categorical colors
+centroids$labels <- factor(3)  ## just a different color
+data$labels <- factor(kmeans$cluster)
+
+print(centroids)
+print(data)
+```
+
+### Visualizing the Clusters
+
+```{r fig.width=5, fig.height=4}
+ggplot(data, aes(x=x, y=y, color=labels)) +
+  # add data points
+  geom_point(size=5) +
+  # add centroids
+  geom_point(data=centroids, size=8, shape=8) +
+  # set basic themen and remove legend
+  theme_bw() + theme(legend.position = "none")
+```
+

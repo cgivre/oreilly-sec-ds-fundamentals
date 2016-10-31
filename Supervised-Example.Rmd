@@ -1,0 +1,134 @@
+---
+title: "Supervised Example"
+output: html_document
+---
+
+Load up Libraries...
+
+```{r warning=FALSE, message=FALSE}
+library(tidyverse)
+library(caret)
+library(randomForest)  # random forest, caret will load this automatically
+library(kernlab) # SVM, caret will load this automatically
+```
+
+Load up the data, be sure to set the target variable as a factor (For R)
+
+```{r}
+dga <- read_csv("data/dga-full.csv") %>%
+  mutate(dsrc = factor(dsrc))
+# helps to have the target class as a factor
+```
+
+### Split data into a training and testing data set
+
+Within `caret` the function `createDataPartition` can take in a vector, 
+usually the class you want to predict on, so it can stratify the selection. In other words, 
+if you have an unbalanced class, with 60% of one class and 40% of another,
+`createDataPartition` will split with the same proportions, so the training data has the
+same 60/40 split. 
+
+For this, let's create a rather small training data se as it will reduce the time to train up a model.  
+Feel free to try a 15%, 20% or even a 30% portion for the training data (lower percentages for slower machines).
+
+In this example, we will split 30% for train and 70% for test.
+
+Normally you would want most of the data in the training data, but more training data can considerably extend
+the time neede to train up a model. 
+
+### Just extract the data for "alexa" and "gameoverdga"
+
+We will be creating a two-class classifier.
+
+```{r}
+
+dga2 <- dga %>% 
+  mutate(dsrc = as.character(dsrc)) %>% 
+  dplyr::filter(dsrc %in% c("alexa", "gameoverdga")) %>% 
+  mutate(dsrc = factor(dsrc))
+
+# for 30/70 train/test, set p = 0.3, or p= 0.15 for 15% split
+set.seed(1) # make the split repeatable
+trainrows <- createDataPartition(dga2$dsrc, p = 0.2, list = FALSE)
+
+traindata <- dga2[trainrows, ]
+testdata <- dga2[-trainrows, ]
+```
+
+### Train both a Random Forest and Support Vector Machine on these. 
+
+Traing the first model using Random Forest, and the second for a Support Vector Machine.
+
+We will compare the two and see which performs better on the data.
+
+```{r}
+ctrl <- trainControl(method="repeatedcv", # do cross validation
+                     repeats=5, # 5 folds
+                     classProbs=TRUE)  # save the probabilities (may speed up if FALSE)
+
+# remember random forsts do no need to be scaled at all
+rfFit <- train(dsrc ~ length + dicts + entropy + numbers + ngram,
+               data = traindata,
+               method = "rf",
+               trControl = ctrl)
+print(rfFit)
+svmFit <- train(dsrc ~ length + dicts + entropy + numbers + ngram,
+                data = traindata,
+                method = "svmRadial",
+                preProc = c("center", "scale"), # data for SVM can't be on totally different scales, so scale the input data
+                tuneLength = 10,
+                trControl = ctrl)
+print(svmFit)
+```
+
+### Look at the confusion matrix on the Random Forst model using the test data 
+
+```{r}
+print(confusionMatrix(predict(rfFit, testdata), testdata$dsrc))
+```
+
+### Look at the confusion matrix on the Random Forst model using the test data 
+
+```{r}
+print(confusionMatrix(predict(svmFit, testdata), testdata$dsrc))
+```
+
+Which one looks better?
+
+### Look at the variable importance in the Random Forest Model
+
+```{r}
+plot(varImp(rfFit))
+```
+
+### For Fun, look at the predicted probabilities.
+
+Could even plot the predicted probabilities using a density (or histogram) plot.
+
+```{r}
+rez <- predict(rfFit, testdata, type="prob")
+summary(rez)
+```
+
+Note the above summary shows two probabilities, the probability the observation
+is from "alexa" and the probability the observation is from "gameoverdga".  They 
+should add up to 1.  
+
+So, if we just take one column, like the `gameoverdga` column, it will tell us the probability of the domain being a DGA.  I will grab just that column, but then separate it into the 
+ground truth, so we see the probability of a domain being a DGA when it is or is not a DGA.
+
+```{r}
+# add in the real label
+rez$dsrc <- testdata$dsrc
+
+### look at spread of just the "gameoverdga" value by the dsrc
+rez %>% 
+  # group by dsrc so we can number them
+  group_by(dsrc) %>% 
+  # the row numbers will make the final even compact
+  mutate(rownum = row_number()) %>% 
+  select(-alexa) %>% 
+  spread(dsrc, gameoverdga) %>% 
+  select(-rownum) %>% 
+  summary
+```

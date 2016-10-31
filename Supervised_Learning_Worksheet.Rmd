@@ -1,0 +1,63 @@
+---
+title: "Supervised Worksheet"
+output: html_document
+---
+
+Load up Libraries...
+
+```{r}
+library(tidyverse)
+library(caret)
+```
+
+Load up the data, be sure to set the target variable as a factor (For R)
+
+```{r}
+dga <- read_csv("data/dga-full.csv") %>%
+  mutate(dsrc = factor(dsrc))
+# helps to have the target class as a factor
+```
+
+### Split data into a training and testing data set
+
+Take a look at the help for `createDataPartition` in the `caret` package.
+
+### Just extract the data for "alexa" and "nivdort"
+
+You will be creating a two-class classifier.
+
+```{r}
+
+```
+
+### Train both a Random Forest and Support Vector Machine on these
+
+Traing the first model using Random Forest, and the second for a Support Vector Machine.
+
+You will compare the two and see which performs better on the data.
+
+```{r}
+# . . .
+
+print(rfFit)
+
+# . . .
+print(svmFit)
+```
+
+### Look at the confusion matrix on the Random Forst model using the test data 
+
+```{r}
+```
+
+### Look at the confusion matrix on the Random Forst model using the test data 
+
+```{r}
+```
+
+Which one looks better?
+
+### Look at the variable importance in the Random Forest Model
+
+```{r}
+```
